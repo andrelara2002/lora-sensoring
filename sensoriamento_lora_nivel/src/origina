@@ -1,0 +1,16 @@
+Serial.begin(DEBUG_SERIAL_BAUDRATE);
+Wire.begin(OLED_SDA_PIN, OLED_SCL_PIN);
+
+while (!Serial);
+
+Serial.println("Adafruit VL53L0X test");
+if (!lox.begin())
+{
+Serial.println(F("Failed to boot VL53L0X"));
+while(1);
+}
+// power
+
+/* Tenta, até obter sucesso, comunicacao com o chip LoRa */
+while(display_init());
+while(init_comunicacao_lora() == false);   
