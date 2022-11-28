@@ -35,8 +35,9 @@
 #define DEBUG_SERIAL_BAUDRATE    115200
  
 /* Variaveis globais */
-long info = 0;
 char *id_sensor = "0";
+int psi_table[256];
+
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
@@ -149,7 +150,136 @@ void setup()
 {    
     Serial.begin(DEBUG_SERIAL_BAUDRATE);
     Wire.begin(OLED_SDA_PIN, OLED_SCL_PIN);
-
+    psi_table[0] = 0;
+psi_table[1] = 26;
+psi_table[2] = 26;
+psi_table[3] = 26;
+psi_table[4] = 26;
+psi_table[5] = 26;
+psi_table[6] = 26;
+psi_table[7] = 26;
+psi_table[8] = 26;
+psi_table[9] = 26;
+psi_table[10] = 26;
+psi_table[11] = 26;
+psi_table[12] = 26;
+psi_table[13] = 26;
+psi_table[14] = 29;
+psi_table[15] = 29;
+psi_table[16] = 29;
+psi_table[17] = 31;
+psi_table[18] = 31;
+psi_table[19] = 31;
+psi_table[20] = 31;
+psi_table[21] = 31;
+psi_table[22] = 31;
+psi_table[23] = 31;
+psi_table[24] = 31;
+psi_table[25] = 31;
+psi_table[26] = 31;
+psi_table[27] = 31;
+psi_table[28] = 31;
+psi_table[29] = 31;
+psi_table[30] = 34;
+psi_table[31] = 34;
+psi_table[32] = 34;
+psi_table[33] = 34;
+psi_table[34] = 34;
+psi_table[35] = 34;
+psi_table[36] = 34;
+psi_table[37] = 34;
+psi_table[38] = 34;
+psi_table[39] = 34;
+psi_table[40] = 34;
+psi_table[41] = 34;
+psi_table[42] = 34;
+psi_table[43] = 34;
+psi_table[44] = 37;
+psi_table[45] = 37;
+psi_table[46] = 37;
+psi_table[47] = 37;
+psi_table[48] = 37;
+psi_table[49] = 40;
+psi_table[50] = 40;
+psi_table[51] = 40;
+psi_table[52] = 40;
+psi_table[53] = 40;
+psi_table[54] = 40;
+psi_table[55] = 40;
+psi_table[56] = 40;
+psi_table[57] = 40;
+psi_table[58] = 40;
+psi_table[59] = 40;
+psi_table[60] = 40;
+psi_table[61] = 40;
+psi_table[62] = 40;
+psi_table[63] = 40;
+psi_table[64] = 40;
+psi_table[65] = 43;
+psi_table[66] = 43;
+psi_table[67] = 43;
+psi_table[68] = 43;
+psi_table[69] = 43;
+psi_table[70] = 43;
+psi_table[71] = 43;
+psi_table[72] = 43;
+psi_table[73] = 43;
+psi_table[74] = 43;
+psi_table[75] = 46;
+psi_table[76] = 46;
+psi_table[77] = 46;
+psi_table[78] = 46;
+psi_table[79] = 46;
+psi_table[80] = 46;
+psi_table[81] = 46;
+psi_table[82] = 46;
+psi_table[83] = 46;
+psi_table[84] = 46;
+psi_table[85] = 46;
+psi_table[86] = 49;
+psi_table[87] = 49;
+psi_table[88] = 49;
+psi_table[89] = 49;
+psi_table[90] = 49;
+psi_table[91] = 49;
+psi_table[92] = 49;
+psi_table[93] = 49;
+psi_table[94] = 49;
+psi_table[95] = 49;
+psi_table[96] = 49;
+psi_table[97] = 52;
+psi_table[98] = 52;
+psi_table[99] = 52;
+psi_table[100] = 52;
+psi_table[101] = 52;
+psi_table[102] = 52;
+psi_table[103] = 52;
+psi_table[104] = 52;
+psi_table[105] = 52;
+psi_table[106] = 52;
+psi_table[107] = 52;
+psi_table[108] = 52;
+psi_table[109] = 52;
+psi_table[110] = 52;
+psi_table[111] = 55;
+psi_table[112] = 55;
+psi_table[113] = 55;
+psi_table[114] = 55;
+psi_table[115] = 55;
+psi_table[116] = 55;
+psi_table[117] = 55;
+psi_table[118] = 55;
+psi_table[119] = 58;
+psi_table[120] = 58;
+psi_table[121] = 58;
+psi_table[122] = 58;
+psi_table[123] = 58;
+psi_table[124] = 58;
+psi_table[125] = 58;
+psi_table[126] = 58;
+psi_table[127] = 58;
+psi_table[128] = 58;
+psi_table[129] = 58;
     Wire.begin(4, 0);
     
     while (!Serial);
@@ -174,28 +304,30 @@ void setup()
 
     display.println("LoRa: OK");
     display.display();
-    delay(5000);
+    delay(2000);
 }
  
 /* Programa principal */
 void loop() 
 {
-    int raw_value  = 0;
-    int offset     = 51;  // ~0.5volt
-    int full_scale = 819; // ~4.5volt max
-    float pressure = 0;   //saida
-    float unit_psi = 174.0;
-
     int lora_rssi = LoRa.packetRssi();
     if (lora_rssi < 0) {lora_rssi = lora_rssi * -1;}
-
-    info = (analogRead(34) - offset) * unit_psi / (full_scale - offset); // conversao para psi
- 
     
-    if(info < 0){
-      info = 0;
+    float info = 0;
+    int number = 0;
+
+    int soma = 0, precision = 50;
+    float med = 0;
+    
+    for(int i = 0; i<=precision; i++){
+        number = analogRead(34);
+        if(number > 129) {number = 129;}
+        soma += psi_table[number];
     }
     
+    med = soma / precision;
+
+    info = med;
   
     display.clearDisplay();
     display.setTextSize(1);
@@ -205,17 +337,21 @@ void loop()
     display.setTextSize(2);
     display.print(info);
     display.println(" PSI");
-
+    display.setTextSize(1); 
+    display.print("Analog: ");
+    display.println(analogRead(34));
     
     display.display();
-
+    /*
     char lora_string[10] = "";
-    sprintf(lora_string,"%d", info);
+    int parsed_info = info;
+    sprintf(lora_string,"%d", parsed_info);
     
     strcat(lora_string, ",");
     strcat(lora_string, id_sensor);
 
-    /* Envia a informação */
+    */
+
     LoRa.beginPacket();
     LoRa.println(id_sensor);
     LoRa.println(info);
