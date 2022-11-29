@@ -39,7 +39,7 @@ Adafruit_VL53L0X lox = Adafruit_VL53L0X(); // Utilizando a biblioteca do sensor
 
 /* Variaveis globais */
 char *id_sensor = "1";     // ID do Sensor, precisa ser mapeado dentro do código do Server
-int tamanho_tanque = 250; // Tamanho total do tanque a ser analisado
+int tamanho_tanque = 225; // Tamanho total do tanque a ser analisado
 double info = 0;             // Informação a ser enviada ao servidor (Sempre em números inteiros)
 
 static const uint8_t scania_logo[1952] = {
@@ -167,7 +167,7 @@ void setup()
     display.drawBitmap(0, 10, scania_logo, 128, 64, 1);
     display.display();
 
-    delay(5000);
+    delay(3000);
     display.clearDisplay();
 
     display.invertDisplay(false);
@@ -201,7 +201,7 @@ void setup()
     display.println("LoRa: Ok");
     display.display();
 
-    delay(5000);
+    delay(1000);
 }
 
 /* Programa principal */
@@ -210,9 +210,21 @@ void loop()
     VL53L0X_RangingMeasurementData_t measure;
     lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
 
+    int soma = 0, precision = 300;
+    float med = 0;
+    
+    
+
     if (measure.RangeStatus != 4)
-    { // phase failures have incorrect data
-        info = 100 - (measure.RangeMilliMeter * 100) / tamanho_tanque;
+    { // phase failures have incorrect data        
+
+       for(int i = 0; i<=precision; i++){
+        soma += measure.RangeMilliMeter;
+       }
+        
+        med = soma / precision;
+        info = ((tamanho_tanque - med) *100)/tamanho_tanque;    
+        if (info <1){info = 0;}
     }
 
     else
@@ -232,14 +244,12 @@ void loop()
     display.println("%");
     display.print(measure.RangeMilliMeter);
     display.println(" mm");
+    display.setTextSize(1);
+    display.print("Media: ");
+    display.println(med);
     
     display.display();
 
-    char lora_string[10] = "";
-    sprintf(lora_string, "%d", info);
-
-    strcat(lora_string, ",");
-    strcat(lora_string, id_sensor);
 
     if (info != -1)
     {
