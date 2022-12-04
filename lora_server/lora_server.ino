@@ -45,7 +45,9 @@ bool loRaInit(void);
  
 /* Variaveis e objetos globais */
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
 StaticJsonDocument<96> doc;
+
 JsonObject doc_0 = doc.createNestedObject();
 
 static const uint8_t scania_logo[1952] = {
@@ -177,8 +179,16 @@ void setup()
     
     WiFi.begin("BLOCO_D_PISO_TERREO_SA", "WiFiSen@i123");
 
-    if(WiFi.status()== WL_CONNECTED) display.println("WiFi: OK");
-    else display.println("WiFi: Error");
+    //WiFi.begin("WF4-2.4Ghz", "paralelepipedo");
+
+    while(WiFi.status() != WL_CONNECTED) {
+      display.print(".");
+      display.display();
+      delay(500);
+    }
+
+    display.println("");
+    display.println("WiFi: OK");
 
     display.println("LoRa: ...");
     display.display();
@@ -188,21 +198,21 @@ void setup()
     display.println("LoRa: OK");
 
     display.display();
+    delay(2000);
 }
  
 /* Programa principal */
 void loop() 
 {
-    char byte_recebido;
-    int packet_size = 0;
-    char informacao_recebida[10];
+    char byte_recebido, informacao_recebida[10];
+    int lora_rssi = 0, packet_size = 0;
+
     char * ptInformaraoRecebida = NULL;
-    int lora_rssi = 0;
+    
    
     /* Verifica se chegou alguma informação do tamanho esperado */
     packet_size = LoRa.parsePacket();
 
-    
     lora_rssi = LoRa.packetRssi();
     display.clearDisplay();   
     display.setTextSize(1);
@@ -217,7 +227,6 @@ void loop()
      
     if (packet_size) 
     {
-        Serial.print("[LoRa Receiver] Há dados a serem lidos");
          
         /* Recebe os dados conforme protocolo */
 
@@ -226,6 +235,12 @@ void loop()
         strcpy(received, lora_data.c_str());
         
         int i = 0;
+
+        /*
+         Desestrutura os dados recebidos:
+            0 - ID do sensor
+            1 - Dados recebidos
+        */
     
         char *p = strtok (received, "\n");
         char *data[3];
@@ -243,6 +258,7 @@ void loop()
        
         /* Escreve RSSI de recepção e informação recebida */
         lora_rssi = LoRa.packetRssi();
+
         display.clearDisplay();   
         display.setTextSize(1);
         display.setCursor(0, OLED_LINE1);
@@ -262,7 +278,6 @@ void loop()
         display.display();
         
       if(WiFi.status()== WL_CONNECTED){
-        WiFiClient client;
         HTTPClient http;
       
         // Your Domain name with URL path or IP address with path
@@ -279,6 +294,7 @@ void loop()
         http.addHeader("device-token", token);
 
         /*
+
         TagoIO upload sample
         {
           "variable": "percent",
@@ -286,6 +302,8 @@ void loop()
           "unit": "%",
           "time": "2021-09-16T17:59:43.672Z"
         }
+
+        String httpRequestData = "[\n{\n \"variable\":\"temperature\",\n \"value\":27\n}\n]";  
         
         **/
 
@@ -299,16 +317,17 @@ void loop()
         
         serializeJson(doc, output);
         
-        //String httpRequestData = "[\n{\n \"variable\":\"temperature\",\n \"value\":27\n}\n]";     
-        // Send HTTP POST request
+           
+        // Envia os dados para API através de HTTP
         
         int httpResponseCode = http.POST(output);
+
         Serial.println(output);
        
-        Serial.print("HTTP Response code: ");
-        Serial.println(httpResponseCode);
+        Serial.println("HTTP Response code: ");
+        Serial.print(httpResponseCode);
           
-        // Free resources
+        // Encerra a requisição HTTP
         http.end();
       }
       else {
